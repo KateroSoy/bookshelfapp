@@ -20,9 +20,9 @@ export default function App() {
   const [route, setRoute] = useState<'landing' | 'onboarding' | 'app'>(() => {
     try {
       const saved = localStorage.getItem('bookshelf_route');
-      return (saved as 'landing' | 'onboarding' | 'app') || 'app';
+      return (saved as 'landing' | 'onboarding' | 'app') || 'landing';
     } catch (e) {
-      return 'app';
+      return 'landing';
     }
   });
   
@@ -49,12 +49,13 @@ export default function App() {
       const savedCreds = localStorage.getItem('bookshelf_credentials');
       if (savedCreds) {
         const parsed = JSON.parse(savedCreds);
-        return !!parsed.password;
+        if (parsed.password) return true;
       }
     } catch (e) {
       // Ignored
     }
-    return false;
+    // If no password, force lock so they have to create one
+    return true;
   });
   
   // Selected Book for Detail View Overlay
@@ -80,7 +81,7 @@ export default function App() {
     } catch (e) {
       console.error('Error parsing books from localStorage', e);
     }
-    return mockBooks;
+    return [];
   });
 
   const [readingGoal, setReadingGoal] = useState<ReadingGoal>(() => {
@@ -96,11 +97,11 @@ export default function App() {
   });
 
   const [userProfile, setUserProfile] = useState<UserProfile>(() => {
-    let profile = { ...mockUserProfile };
+    let profile = { name: '', email: '', avatarUrl: '', favoriteGenres: [], joinedAt: new Date().toISOString() };
     try {
       const saved = localStorage.getItem('bookshelf_user_profile');
       if (saved) {
-        profile = JSON.parse(saved);
+        profile = { ...profile, ...JSON.parse(saved) };
       }
     } catch (e) {
       console.error('Error parsing user profile from localStorage', e);
@@ -254,14 +255,16 @@ export default function App() {
       monthlyPagesTarget: data.monthlyPagesTarget
     }));
 
-    // 3. Mark selected starter books as 'reading'
-    setBooks(prevBooks => 
-      prevBooks.map(b => 
-        data.selectedInitialBooks.includes(b.id) 
-          ? { ...b, status: 'reading', progress: 10, pagesRead: Math.round(b.pages * 0.1) }
-          : b
-      )
-    );
+    // 3. Mark selected starter books as 'reading' and add them to the library
+    const starterBooksToAdd = mockBooks
+      .filter(b => data.selectedInitialBooks.includes(b.id))
+      .map(b => ({ ...b, status: 'reading' as const, progress: 10, pagesRead: Math.round(b.pages * 0.1) }));
+      
+    setBooks(prevBooks => {
+      const existingIds = new Set(prevBooks.map(b => b.id));
+      const newBooks = starterBooksToAdd.filter(b => !existingIds.has(b.id));
+      return [...newBooks, ...prevBooks];
+    });
 
     // 4. Advance route
     setRoute('app');
@@ -353,6 +356,7 @@ export default function App() {
         <LoginView 
           credentials={credentials} 
           onUnlock={() => setIsLocked(false)} 
+          onCreateCredentials={handleSaveCredentials}
           theme={theme} 
         />
       )}

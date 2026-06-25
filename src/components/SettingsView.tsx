@@ -341,24 +341,6 @@ export default function SettingsView({
         )}
       </div>
 
-      {/* Factory reset option */}
-      <div className="p-4 bg-rose-50/30 dark:bg-rose-950/10 border border-rose-100/50 dark:border-rose-900/20 rounded-xl flex items-center justify-between">
-        <div>
-          <h4 className="text-xs font-serif font-bold text-rose-600 dark:text-rose-400">Mulai Ulang Aplikasi</h4>
-          <p className="text-[10px] text-rose-700 dark:text-rose-400/80 mt-0.5">Kembalikan aplikasi ke setelan awal jika Anda ingin memulai kembali dari nol.</p>
-        </div>
-        <button
-          onClick={() => {
-            if (window.confirm('Setel ulang aplikasi? Tindakan ini akan menghapus semua buku dan catatan Anda secara permanen jika belum dicadangkan.')) {
-              localStorage.clear();
-              window.location.reload();
-            }
-          }}
-          className="px-3.5 py-1.5 border border-rose-200 hover:bg-rose-50 text-rose-600 text-[9px] font-mono uppercase tracking-wider font-bold rounded-lg transition-all cursor-pointer"
-        >
-          Setel Ulang
-        </button>
-      </div>
     </div>
   );
 }

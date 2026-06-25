@@ -1,32 +1,44 @@
 import React, { useState } from 'react';
-import { KeyRound, Shield, HelpCircle, Eye, EyeOff } from 'lucide-react';
+import { KeyRound, Shield, HelpCircle, Eye, EyeOff, UserPlus } from 'lucide-react';
 
 interface LoginViewProps {
   credentials: { username?: string; password?: string };
   onUnlock: () => void;
+  onCreateCredentials: (username?: string, password?: string) => void;
   theme: 'light' | 'dark';
 }
 
-export default function LoginView({ credentials, onUnlock, theme }: LoginViewProps) {
+export default function LoginView({ credentials, onUnlock, onCreateCredentials, theme }: LoginViewProps) {
   const [usernameInput, setUsernameInput] = useState('');
   const [passwordInput, setPasswordInput] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const isCreating = !credentials.password; // If no password saved, we are in creation mode
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
-    const targetUser = (credentials.username || '').trim().toLowerCase();
-    const targetPass = (credentials.password || '').trim();
-
     const userInput = usernameInput.trim().toLowerCase();
     const passInput = passwordInput.trim();
 
-    if (userInput === targetUser && passInput === targetPass) {
+    if (isCreating) {
+      if (!userInput || !passInput) {
+        setError('Nama pengguna dan kata sandi wajib diisi.');
+        return;
+      }
+      onCreateCredentials(usernameInput.trim(), passInput);
       onUnlock();
     } else {
-      setError('Nama pengguna atau kata sandi tidak cocok. Silakan coba lagi.');
+      const targetUser = (credentials.username || '').trim().toLowerCase();
+      const targetPass = (credentials.password || '').trim();
+
+      if (userInput === targetUser && passInput === targetPass) {
+        onUnlock();
+      } else {
+        setError('Nama pengguna atau kata sandi tidak cocok. Silakan coba lagi.');
+      }
     }
   };
 
@@ -53,7 +65,7 @@ export default function LoginView({ credentials, onUnlock, theme }: LoginViewPro
               Bookshelf<span className="text-gold font-sans font-light">AI</span>
             </h2>
             <span className="text-[9px] font-mono tracking-[0.25em] text-neutral-400 font-bold uppercase block">
-              AKSES TERBATAS
+              {isCreating ? 'BUAT AKUN BARU' : 'AKSES TERBATAS'}
             </span>
           </div>
         </div>
@@ -61,7 +73,9 @@ export default function LoginView({ credentials, onUnlock, theme }: LoginViewPro
         <div className="h-[1px] bg-sand dark:bg-neutral-800" />
 
         <p className="text-xs text-neutral-500 dark:text-neutral-400 text-center leading-relaxed max-w-xs mx-auto font-medium">
-          Aplikasi terkunci untuk melindungi catatan membaca, kutipan buku, dan target membaca harian Anda.
+          {isCreating 
+            ? 'Buat nama pengguna dan kata sandi untuk melindungi catatan dan target membaca Anda.'
+            : 'Aplikasi terkunci untuk melindungi catatan membaca, kutipan buku, dan target membaca harian Anda.'}
         </p>
 
         {/* Form fields */}
@@ -73,7 +87,7 @@ export default function LoginView({ credentials, onUnlock, theme }: LoginViewPro
             <input
               type="text"
               required
-              placeholder="Masukkan nama pengguna"
+              placeholder={isCreating ? "Pilih nama pengguna" : "Masukkan nama pengguna"}
               value={usernameInput}
               onChange={(e) => setUsernameInput(e.target.value)}
               className="w-full p-3 text-xs bg-neutral-50 dark:bg-neutral-900 border border-sand dark:border-neutral-800 rounded-xl text-charcoal dark:text-cream outline-none focus:border-charcoal dark:focus:border-cream transition-colors"
@@ -90,7 +104,7 @@ export default function LoginView({ credentials, onUnlock, theme }: LoginViewPro
               <input
                 type={showPassword ? 'text' : 'password'}
                 required
-                placeholder="Masukkan kata sandi"
+                placeholder={isCreating ? "Buat kata sandi" : "Masukkan kata sandi"}
                 value={passwordInput}
                 onChange={(e) => setPasswordInput(e.target.value)}
                 className="w-full p-3 pr-10 text-xs bg-neutral-50 dark:bg-neutral-900 border border-sand dark:border-neutral-800 rounded-xl text-charcoal dark:text-cream outline-none focus:border-charcoal dark:focus:border-cream transition-colors"
@@ -115,12 +129,15 @@ export default function LoginView({ credentials, onUnlock, theme }: LoginViewPro
             type="submit"
             className="w-full py-3.5 bg-charcoal hover:opacity-95 dark:bg-cream dark:text-charcoal text-cream font-mono tracking-wider uppercase text-[10px] font-bold rounded-xl shadow-md hover:scale-[1.01] active:scale-98 transition-all cursor-pointer flex items-center justify-center gap-2"
           >
-            <KeyRound size={13} /> Buka Kunci
+            {isCreating ? <><UserPlus size={13} /> Buat Akun</> : <><KeyRound size={13} /> Buka Kunci</>}
           </button>
         </form>
 
-        <div className="flex justify-center items-center gap-1 text-[9px] text-neutral-400 font-mono uppercase">
-          <HelpCircle size={10} /> Lupa kata sandi? Anda dapat memulihkan data dengan mengunggah file cadangan Anda kapan saja di halaman pengaturan.
+        <div className="flex justify-center items-center gap-1 text-[9px] text-neutral-400 font-mono uppercase text-center">
+          <HelpCircle size={10} className="shrink-0" /> 
+          {isCreating 
+            ? 'Akun ini hanya tersimpan di perangkat Anda. Data dijamin privat.'
+            : 'Lupa kata sandi? Anda dapat memulihkan data dengan mengunggah file cadangan Anda kapan saja di halaman pengaturan.'}
         </div>
       </div>
     </div>
