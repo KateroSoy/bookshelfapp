@@ -336,7 +336,7 @@ export default function App() {
       {route === 'landing' && (
         <LandingHero 
           onStartApp={() => setRoute('onboarding')}
-          featuredBooks={books}
+          featuredBooks={books.length > 0 ? books : mockBooks}
           theme={theme}
           onToggleTheme={handleToggleTheme}
         />
