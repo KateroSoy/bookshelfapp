@@ -1,0 +1,6 @@
+{
+  "name": "Bookshelf AI",
+  "description": "Asisten perpustakaan pribadi cerdas untuk melacak buku, menyusun catatan, melatih ingatan membaca, dan memantau target harian Anda secara konsisten.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
